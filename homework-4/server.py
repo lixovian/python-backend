@@ -43,9 +43,9 @@ def server_info() -> str:
 @app.route("/author")
 def author():
     author_data = {
-        "name": "Stas",
-        "course": 3,
-        "age": 21,
+        "name": "Kirill",
+        "course": 2,
+        "age": 19,
     }
     return jsonify(author_data)
 

@@ -6,22 +6,35 @@
 
 До начала работы
 ```bash
-pip install -r requirements.txt```
+pip install -r requirements.txt
+```
 
 Docker
 ```bash
 docker compose up --build
 ```
 
-Для запуска команд на докер-образе требуется использовать 
+Для запуска команд на докер-образе требуется использовать
 ```bash
-docker compose exec web 'текст команды'
+docker compose exec web python manage.py 'текст команды'
+
+# например:
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
 ```
 
 Команды внутри образа
 ```bash
-python manage.py migrate
-python manage.py createsuperuser
+docker compose up -d db
+docker compose up -d web
+docker compose exec web python manage.py migrate
+```
+
+Если нужно сбросить и заново поднять данные БД:
+```bash
+docker compose down -v
+docker compose up --build -d
+docker compose exec web python manage.py migrate
 ```
 
 ## Подключение
@@ -45,6 +58,7 @@ python manage.py createsuperuser
 - `DELETE /api/posts/{id}/` - Удалить пост
 - `POST /api/posts/{id}/like/` - Добавить/убрать лайк
 - `GET /api/posts/{id}/likes/` - Получить количество лайков
+- `GET /api/posts/top_by_likes/` - топ-10 постов по лайкам (агрегированные данные)
 
 ### Комментарии
 - `GET /api/comments/` - Список всех комментариев
@@ -54,3 +68,4 @@ python manage.py createsuperuser
 - `DELETE /api/comments/{id}/` - Удалить комментарий
 - `POST /api/comments/{id}/like/` - Добавить/убрать лайк
 - `GET /api/comments/{id}/likes/` - Получить количество лайков
+- `GET /api/comments/top_by_likes/` - топ-10 комментариев по лайкам (агрегированные данные)

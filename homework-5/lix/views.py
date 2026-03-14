@@ -3,8 +3,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django.contrib.auth.models import User
+from django.db.models import Count
 from .models import Post, Comment, PostLike, CommentLike
-from .serializers import UserSerializer, PostSerializer, CommentSerializer
+from .serializers import (
+    UserSerializer,
+    PostSerializer,
+    CommentSerializer,
+    PostLikeSerializer,
+    CommentLikeSerializer,
+)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -35,6 +42,23 @@ class PostViewSet(viewsets.ModelViewSet):
         post = self.get_object()
         return Response({'likes_count': post.post_likes.count()})
 
+    @action(detail=False, methods=['get'])
+    def top_by_likes(self, request):
+        posts = (
+            Post.objects.annotate(likes_count=Count('post_likes'))
+            .order_by('-likes_count', '-created_at')[:10]
+        )
+        data = [
+            {
+                'id': post.id,
+                'title': post.title,
+                'author_id': post.author_id,
+                'likes_count': post.likes_count,
+            }
+            for post in posts
+        ]
+        return Response(data)
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
@@ -57,3 +81,38 @@ class CommentViewSet(viewsets.ModelViewSet):
     def likes(self, request, pk=None):
         comment = self.get_object()
         return Response({'likes_count': comment.comment_likes.count()})
+
+    @action(detail=False, methods=['get'])
+    def top_by_likes(self, request):
+        comments = (
+            Comment.objects.annotate(likes_count=Count('comment_likes'))
+            .order_by('-likes_count', '-created_at')[:10]
+        )
+        data = [
+            {
+                'id': comment.id,
+                'post_id': comment.post_id,
+                'author_id': comment.author_id,
+                'likes_count': comment.likes_count,
+            }
+            for comment in comments
+        ]
+        return Response(data)
+
+
+class PostLikeViewSet(viewsets.ModelViewSet):
+    queryset = PostLike.objects.all()
+    serializer_class = PostLikeSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CommentLikeViewSet(viewsets.ModelViewSet):
+    queryset = CommentLike.objects.all()
+    serializer_class = CommentLikeSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

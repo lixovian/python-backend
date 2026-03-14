@@ -11,16 +11,32 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
     ports:
       - "8000:8000"
+    environment:
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: comments_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: "5432"
+      DJANGO_SETTINGS_MODULE: homework_5.settings
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:

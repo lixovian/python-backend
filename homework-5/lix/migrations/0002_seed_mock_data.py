@@ -1,4 +1,5 @@
 from django.db import migrations
+from django.contrib.auth.hashers import make_password
 
 
 def seed_mock_data(apps, schema_editor):
@@ -10,24 +11,33 @@ def seed_mock_data(apps, schema_editor):
 
     user1, _ = User.objects.get_or_create(
         username='alice',
-        defaults={'email': 'alice@example.com', 'first_name': 'Alice', 'last_name': 'Smith'},
+        defaults={
+            'email': 'alice@example.com',
+            'first_name': 'Alice',
+            'last_name': 'Smith',
+            'password': make_password('alicepass123'),
+        },
     )
-    user1.set_password('alicepass123')
-    user1.save(update_fields=['password'])
 
     user2, _ = User.objects.get_or_create(
         username='bob',
-        defaults={'email': 'bob@example.com', 'first_name': 'Bob', 'last_name': 'Jones'},
+        defaults={
+            'email': 'bob@example.com',
+            'first_name': 'Bob',
+            'last_name': 'Jones',
+            'password': make_password('bobpass123'),
+        },
     )
-    user2.set_password('bobpass123')
-    user2.save(update_fields=['password'])
 
     user3, _ = User.objects.get_or_create(
         username='carol',
-        defaults={'email': 'carol@example.com', 'first_name': 'Carol', 'last_name': 'Brown'},
+        defaults={
+            'email': 'carol@example.com',
+            'first_name': 'Carol',
+            'last_name': 'Brown',
+            'password': make_password('carolpass123'),
+        },
     )
-    user3.set_password('carolpass123')
-    user3.save(update_fields=['password'])
 
     post1, _ = Post.objects.get_or_create(
         author=user1,

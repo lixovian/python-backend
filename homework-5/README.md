@@ -34,7 +34,45 @@ docker compose exec web python manage.py migrate
 ```bash
 docker compose down -v
 docker compose up --build -d
-docker compose exec web python manage.py migrate
+```
+
+## Авторизация
+Используется авторизация через java web token
+
+### Получить токен
+```bash
+POST /api/token/
+{
+    "username": "your_username",
+    "password": "your_password"
+}
+```
+Ответ:
+```json
+{
+    "access": "<access_token>",
+    "refresh": "<refresh_token>"
+}
+```
+
+### Обновить токен
+```bash
+POST /api/token/refresh/
+{
+    "refresh": "<refresh_token>"
+}
+```
+
+## Запуск тестов
+
+Локально:
+```bash
+python manage.py test lix.tests
+```
+
+В Docker:
+```bash
+docker compose run --rm web python manage.py test lix.tests
 ```
 
 ## Подключение
@@ -42,6 +80,10 @@ docker compose exec web python manage.py migrate
 - Админка: `http://localhost:8000/admin/`
 
 ## API Endpoints
+
+### Аутентификация
+- `POST /api/token/` - Получить JWT-токен (access + refresh)
+- `POST /api/token/refresh/` - Обновить access-токен
 
 ### Пользователи
 - `GET /api/users/` - Список всех пользователей
@@ -69,3 +111,11 @@ docker compose exec web python manage.py migrate
 - `POST /api/comments/{id}/like/` - Добавить/убрать лайк
 - `GET /api/comments/{id}/likes/` - Получить количество лайков
 - `GET /api/comments/top_by_likes/` - топ-10 комментариев по лайкам (агрегированные данные)
+
+### Лайки (прямой доступ)
+- `GET /api/post-likes/` - Список лайков постов
+- `POST /api/post-likes/` - Создать лайк поста
+- `DELETE /api/post-likes/{id}/` - Удалить лайк поста (только владелец)
+- `GET /api/comment-likes/` - Список лайков комментариев
+- `POST /api/comment-likes/` - Создать лайк комментария
+- `DELETE /api/comment-likes/{id}/` - Удалить лайк комментария (только владелец)
